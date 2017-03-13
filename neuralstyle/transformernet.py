@@ -81,7 +81,6 @@ class ResidualBlock(torch.nn.Module):
         return out
 
 
-
 class ConvLayer(torch.nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride):
         super(ConvLayer, self).__init__()
