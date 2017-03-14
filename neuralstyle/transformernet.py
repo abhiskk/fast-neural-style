@@ -12,11 +12,11 @@ class TransformerNet(torch.nn.Module):
 
         # Initial convolution layers
         self.conv1 = ConvLayer(3, 32, 9, 1)
-        self.bn1 = nn.BatchNorm2d(32)
+        self.in1 = InstanceNormalization()
         self.conv2 = ConvLayer(32, 64, 3, 2)
-        self.bn2 = nn.BatchNorm2d(64)
+        self.in2 = InstanceNormalization()
         self.conv3 = ConvLayer(64, 128, 3, 2)
-        self.bn3 = nn.BatchNorm2d(128)
+        self.in3 = InstanceNormalization()
 
         # Residual layers
         self.res1 = ResidualBlock(128)
@@ -27,11 +27,11 @@ class TransformerNet(torch.nn.Module):
 
         # Upsampling Layers
         self.deconv1 = ResizeConvLayer(128, 64, 3, 2)
-        self.bn4 = nn.BatchNorm2d(64)
+        self.in4 = InstanceNormalization()
         self.deconv2 = ResizeConvLayer(64, 32, 3, 2)
-        self.bn5 = nn.BatchNorm2d(32)
+        self.in5 = InstanceNormalization()
         self.deconv3 = ConvLayer(32, 3, 9, 1)
-        self.bn6 = nn.BatchNorm2d(3)
+        self.in6 = InstanceNormalization()
 
         # Non-linearities
         self.relu = nn.ReLU()
@@ -39,18 +39,17 @@ class TransformerNet(torch.nn.Module):
 
     def forward(self, X):
         in_X = self.reflect_padding(X)
-        y = self.relu(self.bn1(self.conv1(in_X)))
-        y = self.relu(self.bn2(self.conv2(y)))
-        y = self.relu(self.bn3(self.conv3(y)))
+        y = self.relu(self.in1(self.conv1(in_X)))
+        y = self.relu(self.in2(self.conv2(y)))
+        y = self.relu(self.in3(self.conv3(y)))
         y = self.res1(y)
         y = self.res2(y)
         y = self.res3(y)
         y = self.res4(y)
         y = self.res5(y)
-        y = self.relu(self.bn4(self.deconv1(y)))
-        y = self.relu(self.bn5(self.deconv2(y)))
-        # TODO: Check if batch-normalization is needed here
-        y = self.tanh(self.bn6(self.deconv3(y)))
+        y = self.relu(self.in4(self.deconv1(y)))
+        y = self.relu(self.in5(self.deconv2(y)))
+        y = self.tanh(self.in6(self.deconv3(y)))
         # TODO: Implement scaling tanh
         raise NotImplementedError
 
@@ -64,19 +63,17 @@ class ResidualBlock(torch.nn.Module):
     def __init__(self, channels):
         super(ResidualBlock, self).__init__()
         self.conv1 = ConvLayer(channels, channels, 3, 1)
-        self.bn1 = nn.BatchNorm2d(channels)
+        self.in1 = InstanceNormalization()
         self.conv2 = ConvLayer(channels, channels, 3, 1)
-        self.bn2 = nn.BatchNorm2d(channels)
         self.relu = nn.ReLU()
 
     def forward(self, x):
         residual = x
         out = self.conv1(x)
-        out = self.bn1(out)
+        # TODO: verify if you need this instance normalization
+        out = self.in1(out)
         out = self.relu(out)
         out = self.conv2(out)
-        # TODO: Remove the following batch-normalization when doing instance-norm
-        out = self.bn2(out)
         out += residual
         return out
 
@@ -86,7 +83,6 @@ class ConvLayer(torch.nn.Module):
         super(ConvLayer, self).__init__()
         reflection_padding = int(np.floor(kernel_size / 2))
         self.reflection_pad = nn.ReflectionPad2d(reflection_padding)
-        # TODO: Check the method for initialization of conv layer weights
         self.conv2d = nn.Conv2d(in_channels, out_channels, kernel_size, stride)
 
     def forward(self, x):
@@ -101,16 +97,32 @@ class ResizeConvLayer(torch.nn.Module):
         self.resize_conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride)
 
     def forward(self, x):
-        # TODO: maybe add reflection padding here also
         out = self.resize_conv(x)
         return out
 
 
-# TODO: Implement InstanceNormalization
 class InstanceNormalization(torch.nn.Module):
-    def __init__(self, dim):
+    """InstanceNormalization
+    Improves convergence of neural-style.
+    ref: https://arxiv.org/pdf/1607.08022.pdf
+    """
+    def __init__(self):
         super(InstanceNormalization, self).__init__()
-        raise NotImplementedError
+
+    def _check_dim(self, x):
+        if x.dim() != 4:
+            raise ValueError('expected 4D input (got {}D input)'
+                             .format(x.dim()))
 
     def forward(self, x):
-        raise NotImplementedError
+        self._check_dim(x)
+        n = x.size()[2] * x.size()[3]
+        t = x.resize(x.size()[0], x.size()[1], 1, n)
+        mean = torch.mean(t, 3).repeat(1, 1, x.size()[2], x.size()[3])
+        # Calculate the biased var. torch.var returns unbiased var
+        var = torch.var(t, 3).repeat(1, 1, x.size()[2], x.size()[3]) * ((n - 1) / float(n))
+        res = (x - mean) / torch.sqrt(var + 1e-9)
+        # TODO: Check if you need to add scaling and shifting here
+        return res
+
+
