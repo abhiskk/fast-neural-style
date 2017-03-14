@@ -121,8 +121,6 @@ class InstanceNormalization(torch.nn.Module):
         mean = torch.mean(t, 3).repeat(1, 1, x.size()[2], x.size()[3])
         # Calculate the biased var. torch.var returns unbiased var
         var = torch.var(t, 3).repeat(1, 1, x.size()[2], x.size()[3]) * ((n - 1) / float(n))
-        res = (x - mean) / torch.sqrt(var + 1e-9)
+        res = (x - mean) / torch.sqrt(var + 1e-5)
         # TODO: Check if you need to add scaling and shifting here
         return res
-
-
