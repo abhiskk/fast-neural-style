@@ -46,7 +46,8 @@ class TransformerNet(torch.nn.Module):
         y = self.res5(y)
         y = self.relu(self.in4(self.deconv1(y)))
         y = self.relu(self.in5(self.deconv2(y)))
-        y = self.tanh(self.in6(self.deconv3(y)))
+        # TODO: Try adding instance-normalization below
+        y = self.tanh(self.deconv3(y))
         y *= 150.0
         return y
 
@@ -90,10 +91,12 @@ class ConvLayer(torch.nn.Module):
 class ResizeConvLayer(torch.nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride):
         super(ResizeConvLayer, self).__init__()
-        self.resize_conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride)
+        reflection_padding = int(np.floor(kernel_size / 2))
+        self.reflection_pad = nn.ReflectionPad2d(reflection_padding)
+        self.resize_conv2d = nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride)
 
     def forward(self, x):
-        out = self.resize_conv(x)
+        out = self.resize_conv2d(x)
         return out
 
 
