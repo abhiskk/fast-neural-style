@@ -28,7 +28,6 @@ class TransformerNet(torch.nn.Module):
         self.deconv2 = ResizeConvLayer(64, 32, 3, 2)
         self.in5 = InstanceNormalization(32)
         self.deconv3 = ConvLayer(32, 3, 9, 1)
-        self.in6 = InstanceNormalization(3)
 
         # Non-linearities
         self.relu = nn.ReLU()
