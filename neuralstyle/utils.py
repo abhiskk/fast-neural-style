@@ -1,6 +1,8 @@
 import os
+
 import torch
 from torch.utils.serialization import load_lua
+
 from vgg16 import Vgg16
 
 
