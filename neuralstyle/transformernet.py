@@ -7,16 +7,13 @@ class TransformerNet(torch.nn.Module):
     def __init__(self):
         super(TransformerNet, self).__init__()
 
-        # Padding layer
-        self.reflect_padding = nn.ReflectionPad2d(20)
-
         # Initial convolution layers
         self.conv1 = ConvLayer(3, 32, 9, 1)
-        self.in1 = InstanceNormalization()
+        self.in1 = InstanceNormalization(32)
         self.conv2 = ConvLayer(32, 64, 3, 2)
-        self.in2 = InstanceNormalization()
+        self.in2 = InstanceNormalization(64)
         self.conv3 = ConvLayer(64, 128, 3, 2)
-        self.in3 = InstanceNormalization()
+        self.in3 = InstanceNormalization(128)
 
         # Residual layers
         self.res1 = ResidualBlock(128)
@@ -27,18 +24,18 @@ class TransformerNet(torch.nn.Module):
 
         # Upsampling Layers
         self.deconv1 = ResizeConvLayer(128, 64, 3, 2)
-        self.in4 = InstanceNormalization()
+        self.in4 = InstanceNormalization(64)
         self.deconv2 = ResizeConvLayer(64, 32, 3, 2)
-        self.in5 = InstanceNormalization()
+        self.in5 = InstanceNormalization(32)
         self.deconv3 = ConvLayer(32, 3, 9, 1)
-        self.in6 = InstanceNormalization()
+        self.in6 = InstanceNormalization(3)
 
         # Non-linearities
         self.relu = nn.ReLU()
         self.tanh = nn.Tanh()
 
     def forward(self, X):
-        in_X = self.reflect_padding(X)
+        in_X = X
         y = self.relu(self.in1(self.conv1(in_X)))
         y = self.relu(self.in2(self.conv2(y)))
         y = self.relu(self.in3(self.conv3(y)))
@@ -50,8 +47,8 @@ class TransformerNet(torch.nn.Module):
         y = self.relu(self.in4(self.deconv1(y)))
         y = self.relu(self.in5(self.deconv2(y)))
         y = self.tanh(self.in6(self.deconv3(y)))
-        # TODO: Implement scaling tanh
-        raise NotImplementedError
+        y *= 150.0
+        return y
 
 
 class ResidualBlock(torch.nn.Module):
@@ -63,14 +60,13 @@ class ResidualBlock(torch.nn.Module):
     def __init__(self, channels):
         super(ResidualBlock, self).__init__()
         self.conv1 = ConvLayer(channels, channels, 3, 1)
-        self.in1 = InstanceNormalization()
+        self.in1 = InstanceNormalization(channels)
         self.conv2 = ConvLayer(channels, channels, 3, 1)
         self.relu = nn.ReLU()
 
     def forward(self, x):
         residual = x
         out = self.conv1(x)
-        # TODO: verify if you need this instance normalization
         out = self.in1(out)
         out = self.relu(out)
         out = self.conv2(out)
@@ -106,8 +102,15 @@ class InstanceNormalization(torch.nn.Module):
     Improves convergence of neural-style.
     ref: https://arxiv.org/pdf/1607.08022.pdf
     """
-    def __init__(self):
+    def __init__(self, dim):
         super(InstanceNormalization, self).__init__()
+        self.scale = nn.Parameter(torch.FloatTensor(dim))
+        self.shift = nn.Parameter(torch.FloatTensor(dim))
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        self.scale.data.uniform_()
+        self.shift.data.zero_()
 
     def _check_dim(self, x):
         if x.dim() != 4:
@@ -118,9 +121,13 @@ class InstanceNormalization(torch.nn.Module):
         self._check_dim(x)
         n = x.size()[2] * x.size()[3]
         t = x.resize(x.size()[0], x.size()[1], 1, n)
-        mean = torch.mean(t, 3).repeat(1, 1, x.size()[2], x.size()[3])
+        mean = torch.mean(t, 3).expand_as(x)
         # Calculate the biased var. torch.var returns unbiased var
-        var = torch.var(t, 3).repeat(1, 1, x.size()[2], x.size()[3]) * ((n - 1) / float(n))
-        res = (x - mean) / torch.sqrt(var + 1e-5)
-        # TODO: Check if you need to add scaling and shifting here
-        return res
+        var = torch.var(t, 3).expand_as(x)
+        scale_broadcast = self.scale.unsqueeze(1).unsqueeze(1).unsqueeze(0)
+        scale_broadcast = scale_broadcast.expand_as(x)
+        shift_broadcast = self.shift.unsqueeze(1).unsqueeze(1).unsqueeze(0)
+        shift_broadcast = shift_broadcast.expand_as(x)
+        out = (x - mean) / torch.sqrt(var + 1e-5)
+        out = (out * scale_broadcast) + shift_broadcast
+        return out
