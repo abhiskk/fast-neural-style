@@ -48,7 +48,7 @@ class TransformerNet(torch.nn.Module):
         y = self.relu(self.in4(self.deconv1(y)))
         y = self.relu(self.in5(self.deconv2(y)))
         y = self.tanh(self.deconv3(y))
-        y *= 150.0
+        y = y * 150.0
         return y
 
 
