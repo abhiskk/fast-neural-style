@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -23,9 +25,9 @@ class TransformerNet(torch.nn.Module):
         self.res5 = ResidualBlock(128)
 
         # Upsampling Layers
-        self.deconv1 = ResizeConvLayer(128, 64, 3, 2)
+        self.deconv1 = UpsampleConvLayer(128, 64, 3, 1, upsample=2)
         self.in4 = InstanceNormalization(64)
-        self.deconv2 = ResizeConvLayer(64, 32, 3, 2)
+        self.deconv2 = UpsampleConvLayer(64, 32, 3, 1, upsample=2)
         self.in5 = InstanceNormalization(32)
         self.deconv3 = ConvLayer(32, 3, 9, 1)
 
@@ -45,7 +47,6 @@ class TransformerNet(torch.nn.Module):
         y = self.res5(y)
         y = self.relu(self.in4(self.deconv1(y)))
         y = self.relu(self.in5(self.deconv2(y)))
-        # TODO: Try adding instance-normalization below
         y = self.tanh(self.deconv3(y))
         y *= 150.0
         return y
@@ -87,15 +88,27 @@ class ConvLayer(torch.nn.Module):
         return out
 
 
-class ResizeConvLayer(torch.nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride):
-        super(ResizeConvLayer, self).__init__()
+class UpsampleConvLayer(torch.nn.Module):
+    """UpsampleConvLayer
+    Upsamples the input and then does a convolution. This method gives better results
+    compared to ConvTranspose2d.
+    ref: http://distill.pub/2016/deconv-checkerboard/
+    """
+    def __init__(self, in_channels, out_channels, kernel_size, stride, upsample=None):
+        super(UpsampleConvLayer, self).__init__()
+        self.upsample = upsample
+        if upsample:
+            self.upsample_layer = torch.nn.UpsamplingNearest2d(scale_factor=upsample)
         reflection_padding = int(np.floor(kernel_size / 2))
         self.reflection_pad = nn.ReflectionPad2d(reflection_padding)
-        self.resize_conv2d = nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride)
+        self.conv2d = nn.Conv2d(in_channels, out_channels, kernel_size, stride)
 
     def forward(self, x):
-        out = self.resize_conv2d(x)
+        x_in = x
+        if self.upsample:
+            x_in = self.upsample_layer(x_in)
+        out = self.reflection_pad(x_in)
+        out = self.conv2d(out)
         return out
 
 
@@ -125,7 +138,7 @@ class InstanceNormalization(torch.nn.Module):
         t = x.resize(x.size()[0], x.size()[1], 1, n)
         mean = torch.mean(t, 3).expand_as(x)
         # Calculate the biased var. torch.var returns unbiased var
-        var = torch.var(t, 3).expand_as(x)
+        var = torch.var(t, 3).expand_as(x) * ((n - 1) / float(n))
         scale_broadcast = self.scale.unsqueeze(1).unsqueeze(1).unsqueeze(0)
         scale_broadcast = scale_broadcast.expand_as(x)
         shift_broadcast = self.shift.unsqueeze(1).unsqueeze(1).unsqueeze(0)
