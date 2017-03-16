@@ -102,12 +102,10 @@ def main():
             x = Variable(utils.preprocess_batch(x))
             if args.cuda:
                 x = x.cuda()
-            # create a copy of original images for calculating content loss
-            xc = x.clone()
             # pass images through the TransformerNet
             y = transformer(x)
             features_y = vgg(y)
-            features_xc = vgg(xc)
+            features_xc = vgg(x)
             f_xc_c = Variable(features_xc[1].data, requires_grad=False)
 
             content_loss = args.content_weight * mse_loss(features_y[1], f_xc_c)
