@@ -42,7 +42,7 @@ def main():
     torch.manual_seed(args.seed)
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
-        kwargs = {'num_workers': 4, 'pin_memory': True}
+        kwargs = {'num_workers': 4, 'pin_memory': False}
     else:
         kwargs = {}
 
@@ -85,7 +85,7 @@ def main():
     style = utils.preprocess_batch(style)
     if args.cuda:
         style = style.cuda()
-    style_v = Variable(style)
+    style_v = Variable(style, volatile=True)
     features_style = vgg(style_v)
     gram_style = [utils.gram_matrix(y) for y in features_style]
 
@@ -105,7 +105,8 @@ def main():
             # pass images through the TransformerNet
             y = transformer(x)
             features_y = vgg(y)
-            features_xc = vgg(x)
+            xc = Variable(x.data.clone(), volatile=True)
+            features_xc = vgg(xc)
             f_xc_c = Variable(features_xc[1].data, requires_grad=False)
 
             content_loss = args.content_weight * mse_loss(features_y[1], f_xc_c)
