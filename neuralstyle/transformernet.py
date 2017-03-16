@@ -121,24 +121,18 @@ class InstanceNormalization(torch.nn.Module):
         super(InstanceNormalization, self).__init__()
         self.scale = nn.Parameter(torch.FloatTensor(dim))
         self.shift = nn.Parameter(torch.FloatTensor(dim))
-        self.reset_parameters()
+        self._reset_parameters()
 
-    def reset_parameters(self):
+    def _reset_parameters(self):
         self.scale.data.uniform_()
         self.shift.data.zero_()
 
-    def _check_dim(self, x):
-        if x.dim() != 4:
-            raise ValueError('expected 4D input (got {}D input)'
-                             .format(x.dim()))
-
     def forward(self, x):
-        self._check_dim(x)
-        n = x.size()[2] * x.size()[3]
-        t = x.resize(x.size()[0], x.size()[1], 1, n)
-        mean = torch.mean(t, 3).expand_as(x)
+        n = x.size(2) * x.size(3)
+        t = x.view(x.size(0), x.size(1), n)
+        mean = torch.mean(t, 2).unsqueeze(2).expand_as(x)
         # Calculate the biased var. torch.var returns unbiased var
-        var = torch.var(t, 3).expand_as(x) * ((n - 1) / float(n))
+        var = torch.var(t, 2).unsqueeze(2).expand_as(x) * ((n - 1) / float(n))
         scale_broadcast = self.scale.unsqueeze(1).unsqueeze(1).unsqueeze(0)
         scale_broadcast = scale_broadcast.expand_as(x)
         shift_broadcast = self.shift.unsqueeze(1).unsqueeze(1).unsqueeze(0)
