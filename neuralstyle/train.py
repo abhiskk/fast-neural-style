@@ -30,6 +30,8 @@ def main():
     parser.add_argument("--content-weight", type=float, default=8.)
     parser.add_argument("--style-weight", type=float, default=5e-4)
     parser.add_argument("--tv-weight", type=float, default=1e-4)
+    parser.add_argument("--log_interval", type=int, default=500)
+    parser.add_argument("--checkpoint-dir", type=str, default="checkpoints")
     args = parser.parse_args()
 
     if args.cuda and not torch.cuda.is_available():
@@ -54,6 +56,8 @@ def main():
     print("CONTENT WEIGHT:", args.content_weight)
     print("STYLE WEIGHT:", args.style_weight)
     print("TV WEIGHT:", args.tv_weight)
+    print("DATASET:", args.dataset)
+    print("CHECKPOINT DIR:", args.checkpoint_dir)
     print("=====================\n")
 
     transform = transforms.Compose([transforms.Scale(args.image_size),
@@ -124,14 +128,16 @@ def main():
             agg_style_loss += style_loss.data[0]
             agg_tv_loss += tv_loss.data[0]
 
-            if (batch_id + 1) % 500 == 0:
+            if (batch_id + 1) % args.log_interval == 0:
                 mesg = "Epoch {}:\t[{}/{}]\tcontent:{:.2f}\tstyle:{:.2f}\ttv:{:.2f}".format(
-                    e, count, 80000,
+                    e + 1, count, len(train_dataset),
                     agg_content_loss / (batch_id + 1),
                     agg_style_loss / (batch_id + 1),
                     agg_tv_loss / (batch_id + 1))
                 print(mesg)
-
+        with open(args.checkpoint_dir + "/epoch_" + str(e + 1) + ".model", "w") as file_pointer:
+            torch.save(transformer, file_pointer)
+        
     print("\nDone :)")
 
 
