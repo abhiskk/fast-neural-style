@@ -94,6 +94,7 @@ class UpsampleConvLayer(torch.nn.Module):
     compared to ConvTranspose2d.
     ref: http://distill.pub/2016/deconv-checkerboard/
     """
+
     def __init__(self, in_channels, out_channels, kernel_size, stride, upsample=None):
         super(UpsampleConvLayer, self).__init__()
         self.upsample = upsample
@@ -117,6 +118,7 @@ class InstanceNormalization(torch.nn.Module):
     Improves convergence of neural-style.
     ref: https://arxiv.org/pdf/1607.08022.pdf
     """
+
     def __init__(self, dim):
         super(InstanceNormalization, self).__init__()
         self.scale = nn.Parameter(torch.FloatTensor(dim))
