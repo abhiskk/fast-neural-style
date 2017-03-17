@@ -2,18 +2,10 @@ from __future__ import print_function
 
 import argparse
 
-import numpy as np
 import torch
-from torch.autograd import Variable
-from torch.optim import Adam
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision import datasets
-
-from transformernet import TransformerNet
-from vgg16 import Vgg16
-import utils
-import os
 
 
 def main():
@@ -37,7 +29,6 @@ def main():
 
     print("=====================")
     print("TEST MODE")
-    print("using 1 worker")
     print("=====================")
 
     print("=====================")
