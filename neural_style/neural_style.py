@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision import datasets
 
-from transformer_net import TransformerNet
+from transformernet import TransformerNet
 from vgg16 import Vgg16
 import utils
 import os
@@ -123,12 +123,16 @@ def train(args):
 def stylize(args):
     model = torch.load(args.saved_model_path)
     model.eval()
+    print(model)
     content = utils.tensor_load_rgbimage(args.content_image, args.image_size)
     content = content.unsqueeze(0)
     content = utils.preprocess_batch(content)
     if args.cuda:
         content = content.cuda()
+    content = Variable(content)
     stylized_content = model(content)
+    if args.cuda:
+        stylized_content = stylized_content.cpu()
     utils.deprocess_img_and_save(stylized_content.data.numpy(), args.save_image_path)
     print("styled image saved at:", args.save_image_path)
 
