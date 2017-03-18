@@ -79,7 +79,5 @@ def init_vgg16(model_folder):
         vgglua = load_lua(model_folder + '/vgg16.t7')
         vgg = Vgg16()
         for (src, dst) in zip(vgglua.parameters()[0], vgg.parameters()):
-            dst[:] = src[:]
+            dst[:].data = src[:]
         torch.save(vgg.state_dict(), model_folder + '/vgg16.weight')
-        # load using :
-        # vgg_model.load_state_dict( torch.load('model/vgg16.weight'))
