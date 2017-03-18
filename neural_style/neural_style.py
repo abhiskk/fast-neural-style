@@ -16,28 +16,7 @@ import utils
 import os
 
 
-def main():
-    parser = argparse.ArgumentParser(description="parser for fast-neural-style")
-    parser.add_argument("--batch-size", "-b", type=int, default=4)
-    parser.add_argument("--epochs", "-e", type=int, default=2)
-    parser.add_argument("--model", "-m", type=str, default="model")
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--cuda", type=int, default=0)
-    parser.add_argument("--dataset", type=str, default="MSCOCO")
-    parser.add_argument("--image-size", type=int, default=256)
-    parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--style-image", type=str, default="style-images/mosaic.jpg")
-    parser.add_argument("--content-weight", type=float, default=8.)
-    parser.add_argument("--style-weight", type=float, default=5e-4)
-    parser.add_argument("--tv-weight", type=float, default=1e-4)
-    parser.add_argument("--log-interval", type=int, default=500)
-    parser.add_argument("--checkpoint-dir", type=str, default="checkpoints")
-    args = parser.parse_args()
-
-    if args.cuda and not torch.cuda.is_available():
-        print("WARNING: torch.cuda not available, using CPU.")
-        args.cuda = 0
-
+def train(args):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     if args.cuda:
@@ -137,8 +116,53 @@ def main():
                 print(mesg)
         with open(args.checkpoint_dir + "/epoch_" + str(e + 1) + ".model", "w") as file_pointer:
             torch.save(transformer, file_pointer)
-        
+
     print("\nDone :)")
+
+
+def stylize(args):
+    model = torch.load(args.saved_model_path)
+    model.eval()
+    content = utils.tensor_load_rgbimage(args.content_image, args.image_size)
+    content = content.unsqueeze(0)
+    content = utils.preprocess_batch(content)
+    if args.cuda:
+        content = content.cuda()
+    stylized_content = model(content)
+    utils.deprocess_img_and_save(stylized_content.data.numpy(), args.save_image_path)
+    print("styled image saved at:", args.save_image_path)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="parser for fast-neural-style")
+    parser.add_argument("--batch-size", "-b", type=int, default=4)
+    parser.add_argument("--epochs", "-e", type=int, default=2)
+    parser.add_argument("--model", "-m", type=str, default="model")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--cuda", type=int, default=0)
+    parser.add_argument("--dataset", type=str, default="MSCOCO")
+    parser.add_argument("--image-size", type=int, default=256)
+    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--style-image", type=str, default="images/style-images/mosaic.jpg")
+    parser.add_argument("--content-weight", type=float, default=8.)
+    parser.add_argument("--style-weight", type=float, default=5e-4)
+    parser.add_argument("--tv-weight", type=float, default=1e-4)
+    parser.add_argument("--log-interval", type=int, default=500)
+    parser.add_argument("--checkpoint-dir", type=str, default="checkpoints")
+    parser.add_argument("--train", type=int, default=1)
+    parser.add_argument("--saved-model-path", type=str, default=None)
+    parser.add_argument("--content-image", type=str, default=None)
+    parser.add_argument("--save-image-path", type=str, default=None)
+    args = parser.parse_args()
+
+    if args.cuda and not torch.cuda.is_available():
+        print("WARNING: torch.cuda not available, using CPU.")
+        args.cuda = 0
+
+    if args.train:
+        train(args)
+    else:
+        stylize(args)
 
 
 if __name__ == "__main__":
