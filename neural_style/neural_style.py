@@ -12,6 +12,7 @@ from transformer_net import TransformerNet
 from vgg16 import Vgg16
 import utils
 import os
+import sys
 
 
 def train(args):
@@ -24,6 +25,7 @@ def train(args):
         kwargs = {}
 
     print("=====================")
+    print("PYTHON VERSION:", sys.version)
     print("PYTORCH VERSION:", torch.__version__)
     print("BATCH SIZE:", args.batch_size)
     print("EPOCHS:", args.epochs)
@@ -124,6 +126,7 @@ def train(args):
 
 def stylize(args):
     print("=====================")
+    print("PYTHON VERSION:", sys.version)
     print("PYTORCH VERSION:", torch.__version__)
     print("CUDA:", args.cuda)
     print("SAVED MODEL PATH:", args.saved_model_path)
