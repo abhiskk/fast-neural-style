@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision import datasets
 
-from transformernet import TransformerNet
+from transformer_net import TransformerNet
 from vgg16 import Vgg16
 import utils
 import os
@@ -53,8 +53,8 @@ def train(args):
     mse_loss = torch.nn.MSELoss()
 
     vgg = Vgg16()
-    utils.init_vgg16(args.model)
-    vgg.load_state_dict(torch.load(os.path.join(args.model, "vgg16.weight")))
+    utils.init_vgg16(args.vgg_model)
+    vgg.load_state_dict(torch.load(os.path.join(args.vgg_model, "vgg16.weight")))
 
     if args.cuda:
         transformer.cuda()
@@ -108,6 +108,10 @@ def train(args):
             agg_tv_loss += tv_loss.data[0]
 
             if (batch_id + 1) % args.log_interval == 0:
+
+                # TODO: Save some stylized images from the training set
+
+
                 mesg = "Epoch {}:\t[{}/{}]\tcontent:{:.2f}\tstyle:{:.2f}\ttv:{:.2f}".format(
                     e + 1, count, len(train_dataset),
                     agg_content_loss / (batch_id + 1),
@@ -121,9 +125,21 @@ def train(args):
 
 
 def stylize(args):
+    print("=====================")
+    print("PYTORCH VERSION:", torch.__version__)
+    print("CUDA:", args.cuda)
+    print("SAVED MODEL PATH:", args.saved_model_path)
+    print("CONTENT IMAGE:", args.content_image)
+    print("IMAGE SIZE:", args.image_size)
+    print("SAVE IMAGE PATH:", args.save_image_path)
+    print("=====================\n")
+
     model = torch.load(args.saved_model_path)
     model.eval()
+    print("-" * 50)
     print(model)
+    print("-" * 50 + "\n")
+
     content = utils.tensor_load_rgbimage(args.content_image, args.image_size)
     content = content.unsqueeze(0)
     content = utils.preprocess_batch(content)
@@ -133,15 +149,16 @@ def stylize(args):
     stylized_content = model(content)
     if args.cuda:
         stylized_content = stylized_content.cpu()
+
     utils.deprocess_img_and_save(stylized_content.data.numpy(), args.save_image_path)
-    print("styled image saved at:", args.save_image_path)
+    print("Styled image saved at:", args.save_image_path)
 
 
 def main():
     parser = argparse.ArgumentParser(description="parser for fast-neural-style")
     parser.add_argument("--batch-size", "-b", type=int, default=4)
     parser.add_argument("--epochs", "-e", type=int, default=2)
-    parser.add_argument("--model", "-m", type=str, default="model")
+    parser.add_argument("--vgg-model", "-m", type=str, default="vgg-model")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--cuda", type=int, default=0)
     parser.add_argument("--dataset", type=str, default="MSCOCO")
