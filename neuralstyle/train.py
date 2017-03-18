@@ -47,6 +47,7 @@ def main():
         kwargs = {}
 
     print("=====================")
+    print("PYTORCH VERSION:", torch.__version__)
     print("BATCH SIZE:", args.batch_size)
     print("EPOCHS:", args.epochs)
     print("RANDOM SEED:", args.seed)
