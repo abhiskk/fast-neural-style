@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision import datasets
 
-from transformernet import TransformerNet
+from transformer_net import TransformerNet
 from vgg16 import Vgg16
 import utils
 import os
