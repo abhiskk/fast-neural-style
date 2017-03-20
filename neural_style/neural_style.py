@@ -13,6 +13,7 @@ from vgg16 import Vgg16
 import utils
 import os
 import sys
+import time
 
 
 def train(args):
@@ -25,6 +26,7 @@ def train(args):
         kwargs = {}
 
     print("=====================")
+    print("CURRENT TIME:", time.ctime())
     print("PYTHON VERSION:", sys.version)
     print("PYTORCH VERSION:", torch.__version__)
     print("BATCH SIZE:", args.batch_size)
@@ -106,8 +108,8 @@ def train(args):
 
                 # TODO: Save some stylized images from the training set
 
-                mesg = "Epoch {}:\t[{}/{}]\tcontent:{:.2f}\tstyle:{:.2f}".format(
-                    e + 1, count, len(train_dataset),
+                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent:{:.2f}\tstyle:{:.2f}".format(
+                    time.ctime(), e + 1, count, len(train_dataset),
                     agg_content_loss / (batch_id + 1),
                     agg_style_loss / (batch_id + 1)
                 )
