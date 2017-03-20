@@ -35,7 +35,6 @@ def train(args):
     print("STYLE IMAGE:", args.style_image)
     print("CONTENT WEIGHT:", args.content_weight)
     print("STYLE WEIGHT:", args.style_weight)
-    print("TV WEIGHT:", args.tv_weight)
     print("DATASET:", args.dataset)
     print("CHECKPOINT DIR:", args.checkpoint_dir)
     print("=====================\n")
@@ -60,7 +59,7 @@ def train(args):
         transformer.cuda()
         vgg.cuda()
 
-    style = utils.tensor_load_rgbimage(args.style_image, args.image_size)
+    style = utils.tensor_load_rgbimage(args.style_image, args.style_size)
     style = style.repeat(args.batch_size, 1, 1, 1)
     style = utils.preprocess_batch(style)
     if args.cuda:
@@ -73,7 +72,6 @@ def train(args):
         transformer.train()
         agg_content_loss = 0.
         agg_style_loss = 0.
-        agg_tv_loss = 0.
         count = 0
         for batch_id, (x, _) in enumerate(train_loader):
             n_batch = len(x)
@@ -97,26 +95,22 @@ def train(args):
                 gram_y = utils.gram_matrix(features_y[m])
                 style_loss += args.style_weight * mse_loss(gram_y, gram_s[:n_batch,:,:])
 
-            tv_loss = args.tv_weight * ((torch.sum(torch.abs(y[:,:,1:,:] - y[:,:,:-1,:])) + torch.sum(torch.abs(y[:,:,:,1:] - y[:,:,:,:-1]))) / float(n_batch))
-
-            total_loss = content_loss + style_loss + tv_loss
+            total_loss = content_loss + style_loss
             total_loss.backward()
             optimizer.step()
 
             agg_content_loss += content_loss.data[0]
             agg_style_loss += style_loss.data[0]
-            agg_tv_loss += tv_loss.data[0]
 
             if (batch_id + 1) % args.log_interval == 0:
 
                 # TODO: Save some stylized images from the training set
 
-
-                mesg = "Epoch {}:\t[{}/{}]\tcontent:{:.2f}\tstyle:{:.2f}\ttv:{:.2f}".format(
+                mesg = "Epoch {}:\t[{}/{}]\tcontent:{:.2f}\tstyle:{:.2f}".format(
                     e + 1, count, len(train_dataset),
                     agg_content_loss / (batch_id + 1),
-                    agg_style_loss / (batch_id + 1),
-                    agg_tv_loss / (batch_id + 1))
+                    agg_style_loss / (batch_id + 1)
+                )
                 print(mesg)
         with open(args.checkpoint_dir + "/epoch_" + str(e + 1) + ".model", "w") as file_pointer:
             torch.save(transformer, file_pointer)
@@ -164,11 +158,11 @@ def main():
     parser.add_argument("--cuda", type=int, default=0)
     parser.add_argument("--dataset", type=str, default="MSCOCO")
     parser.add_argument("--image-size", type=int, default=256)
+    parser.add_argument("--style-size", default=None)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--style-image", type=str, default="images/style-images/mosaic.jpg")
-    parser.add_argument("--content-weight", type=float, default=8.)
-    parser.add_argument("--style-weight", type=float, default=5e-4)
-    parser.add_argument("--tv-weight", type=float, default=1e-4)
+    parser.add_argument("--content-weight", type=float, default=1.)
+    parser.add_argument("--style-weight", type=float, default=5.)
     parser.add_argument("--log-interval", type=int, default=500)
     parser.add_argument("--checkpoint-dir", type=str, default="checkpoints")
     parser.add_argument("--train", type=int, default=1)
