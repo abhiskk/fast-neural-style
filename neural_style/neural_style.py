@@ -21,7 +21,7 @@ def train(args):
     torch.manual_seed(args.seed)
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
-        kwargs = {'num_workers': 4, 'pin_memory': False}
+        kwargs = {'num_workers': 0, 'pin_memory': False}
     else:
         kwargs = {}
 
@@ -108,7 +108,7 @@ def train(args):
 
                 # TODO: Save some stylized images from the training set
 
-                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent:{:.2f}\tstyle:{:.2f}".format(
+                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent:{:.6f}\tstyle:{:.6f}".format(
                     time.ctime(), e + 1, count, len(train_dataset),
                     agg_content_loss / (batch_id + 1),
                     agg_style_loss / (batch_id + 1)
