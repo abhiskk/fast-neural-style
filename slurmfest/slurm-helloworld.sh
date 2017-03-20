@@ -2,7 +2,7 @@
 #
 #SBATCH --job-name=ak_experiment
 #SBATCH --partition=gpu
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:p1080:1
 #SBATCH --time=23:00:00
 #SBATCH --mem=200000
 #SBATCH --output=ak_experiment_%A.out
@@ -19,7 +19,7 @@ python3 -m pip install -U pip setuptools --user
 python3 -m pip install cmake --user
 python3 -m pip install numpy --upgrade --user
 python3 -m pip install scipy --upgrade --user
-python3 -m pip install git+https://github.com/pytorch/pytorch.git@master  --user
+python3 -m pip install git+https://github.com/pytorch/pytorch.git@master --upgrade --user
 python3 -m pip install torchvision --user
 
 cd /scratch/ak6179/testing
