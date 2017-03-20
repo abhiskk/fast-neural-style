@@ -21,7 +21,7 @@ def train(args):
     torch.manual_seed(args.seed)
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
-        kwargs = {'num_workers': 4, 'pin_memory': False}
+        kwargs = {'num_workers': 0, 'pin_memory': False}
     else:
         kwargs = {}
 
@@ -39,6 +39,9 @@ def train(args):
     print("STYLE WEIGHT:", args.style_weight)
     print("DATASET:", args.dataset)
     print("CHECKPOINT DIR:", args.checkpoint_dir)
+    print("VALIDATION:", args.validation)
+    print("VAL DIR:", args.val_dir)
+    print("STYLE SIZE:", args.style_size)
     print("=====================\n")
 
     transform = transforms.Compose([transforms.Scale(args.image_size),
@@ -82,11 +85,14 @@ def train(args):
             x = Variable(utils.preprocess_batch(x))
             if args.cuda:
                 x = x.cuda()
-            # pass images through the TransformerNet
+
             y = transformer(x)
-            features_y = vgg(y)
+
             xc = Variable(x.data.clone(), volatile=True)
+
+            features_y = vgg(y)
             features_xc = vgg(xc)
+
             f_xc_c = Variable(features_xc[1].data, requires_grad=False)
 
             content_loss = args.content_weight * mse_loss(features_y[1], f_xc_c)
@@ -108,14 +114,43 @@ def train(args):
 
                 # TODO: Save some stylized images from the training set
 
-                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent:{:.2f}\tstyle:{:.2f}".format(
+                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent:{:.6f}\tstyle:{:.6f}".format(
                     time.ctime(), e + 1, count, len(train_dataset),
                     agg_content_loss / (batch_id + 1),
                     agg_style_loss / (batch_id + 1)
                 )
+                if args.validation:
+                    if args.cuda:
+                        utils.deprocess_img_and_save(x.cpu().data.numpy(),
+                                                     args.val_dir + "/epoch_original_" + str(e + 1) + "_"
+                                                     + str(time.ctime()).replace(' ', '_') + "_"
+                                                     + str(args.content_weight) + "_" + str(args.style_weight)
+                                                     + ".jpg"
+                                                     )
+                        utils.deprocess_img_and_save(y.cpu().data.numpy(),
+                                                     args.val_dir + "/epoch_stylized_" + str(e + 1) + "_"
+                                                     + str(time.ctime()).replace(' ', '_') + "_"
+                                                     + str(args.content_weight) + "_" + str(args.style_weight)
+                                                     + ".jpg")
+                    else:
+                        utils.deprocess_img_and_save(x.data.numpy(),
+                                                     args.val_dir + "/epoch_original_" + str(e + 1) + "_"
+                                                     + str(time.ctime()).replace(' ', '_') + "_"
+                                                     + str(args.content_weight) + "_" + str(args.style_weight)
+                                                     + ".jpg"
+                                                     )
+                        utils.deprocess_img_and_save(y.data.numpy(),
+                                                     args.val_dir + "/epoch_stylized_" + str(e + 1) + "_"
+                                                     + str(time.ctime()).replace(' ', '_') + "_"
+                                                     + str(args.content_weight) + "_" + str(args.style_weight)
+                                                     + ".jpg")
                 print(mesg)
-        with open(args.checkpoint_dir + "/epoch_" + str(e + 1) + ".model", "w") as file_pointer:
-            torch.save(transformer, file_pointer)
+
+
+        torch.save(transformer, args.checkpoint_dir + "/epoch_" + str(e + 1) + "_"
+                   + str(time.ctime()).replace(' ', '_') + "_"
+                   + str(args.content_weight) + "_" + str(args.style_weight)
+                   + ".model")
 
     print("\nDone :)")
 
@@ -153,20 +188,22 @@ def stylize(args):
 
 def main():
     parser = argparse.ArgumentParser(description="parser for fast-neural-style")
+    parser.add_argument("--validation", type=int, required=True)
+    parser.add_argument("--val-dir", type=str, default=None)
     parser.add_argument("--batch-size", "-b", type=int, default=4)
     parser.add_argument("--epochs", "-e", type=int, default=2)
-    parser.add_argument("--vgg-model", "-m", type=str, default="vgg-model")
+    parser.add_argument("--vgg-model", "-m", type=str, required=True)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--cuda", type=int, default=0)
-    parser.add_argument("--dataset", type=str, default="MSCOCO")
+    parser.add_argument("--cuda", type=int, required=True)
+    parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--image-size", type=int, default=256)
-    parser.add_argument("--style-size", default=None)
+    parser.add_argument("--style-size", type=int, default=None)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--style-image", type=str, default="images/style-images/mosaic.jpg")
     parser.add_argument("--content-weight", type=float, default=1.)
-    parser.add_argument("--style-weight", type=float, default=5.)
+    parser.add_argument("--style-weight", type=float, default=100.)
     parser.add_argument("--log-interval", type=int, default=500)
-    parser.add_argument("--checkpoint-dir", type=str, default="checkpoints")
+    parser.add_argument("--checkpoint-dir", type=str, required=True)
     parser.add_argument("--train", type=int, default=1)
     parser.add_argument("--saved-model-path", type=str, default=None)
     parser.add_argument("--content-image", type=str, default=None)
