@@ -14,6 +14,7 @@ echo $SLURM_JOBID - `hostname` >> ~/slurm-jobs.txt
 
 module purge
 module load python3/intel/3.5.3
+module load cuda/8.0.44
 
 python3 -m pip install -U pip setuptools --user
 python3 -m pip install cmake --user
