@@ -137,6 +137,6 @@ class InstanceNormalization(torch.nn.Module):
         scale_broadcast = scale_broadcast.expand_as(x)
         shift_broadcast = self.shift.unsqueeze(1).unsqueeze(1).unsqueeze(0)
         shift_broadcast = shift_broadcast.expand_as(x)
-        out = (x - mean) / torch.sqrt(var + 1e-5)
+        out = (x - mean) / torch.sqrt(var + 1e-9)
         out = (out * scale_broadcast) + shift_broadcast
         return out
