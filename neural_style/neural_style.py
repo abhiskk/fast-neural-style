@@ -39,6 +39,7 @@ def train(args):
     print("STYLE WEIGHT:", args.style_weight)
     print("DATASET:", args.dataset)
     print("CHECKPOINT DIR:", args.checkpoint_dir)
+    print("VAL DIR:", args.val_dir)
     print("=====================\n")
 
     transform = transforms.Compose([transforms.Scale(args.image_size),
@@ -113,9 +114,26 @@ def train(args):
                     agg_content_loss / (batch_id + 1),
                     agg_style_loss / (batch_id + 1)
                 )
+                if args.cuda:
+                    utils.deprocess_img_and_save(x.cpu().data.numpy(),
+                                                 args.val_dir + "/epoch_original_" + str(e + 1) + "_"
+                                                 + str(time.ctime()).replace(' ', '_') + ".jpg"
+                                                 )
+                    utils.deprocess_img_and_save(y.cpu().data.numpy(),
+                                                 args.val_dir + "/epoch_stylized_" + str(e + 1) + "_"
+                                                 + str(time.ctime()).replace(' ', '_') + ".jpg")
+                else:
+                    utils.deprocess_img_and_save(x.data.numpy(),
+                                                 args.val_dir + "/epoch_original_" + str(e + 1) + "_"
+                                                 + str(time.ctime()).replace(' ', '_') + ".jpg"
+                                                 )
+                    utils.deprocess_img_and_save(y.data.numpy(),
+                                                 args.val_dir + "/epoch_stylized_" + str(e + 1) + "_"
+                                                 + str(time.ctime()).replace(' ', '_') + ".jpg")
                 print(mesg)
-        with open(args.checkpoint_dir + "/epoch_" + str(e + 1) + ".model", "w") as file_pointer:
-            torch.save(transformer, file_pointer)
+
+
+        torch.save(transformer, args.checkpoint_dir + "/epoch_" + str(e + 1) + ".model")
 
     print("\nDone :)")
 
@@ -153,6 +171,7 @@ def stylize(args):
 
 def main():
     parser = argparse.ArgumentParser(description="parser for fast-neural-style")
+    parser.add_argument("--val-dir", type=str, default='val-dir')
     parser.add_argument("--batch-size", "-b", type=int, default=4)
     parser.add_argument("--epochs", "-e", type=int, default=2)
     parser.add_argument("--vgg-model", "-m", type=str, default="vgg-model")
