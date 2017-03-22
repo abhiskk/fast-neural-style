@@ -70,6 +70,7 @@ def train(args):
     if args.cuda:
         style = style.cuda()
     style_v = Variable(style, volatile=True)
+    utils.subtract_imagenet_mean_batch(style_v)
     features_style = vgg(style_v)
     gram_style = [utils.gram_matrix(y) for y in features_style]
 
@@ -89,6 +90,9 @@ def train(args):
             y = transformer(x)
 
             xc = Variable(x.data.clone(), volatile=True)
+
+            utils.subtract_imagenet_mean_batch(y)
+            utils.subtract_imagenet_mean_batch(xc)
 
             features_y = vgg(y)
             features_xc = vgg(xc)
@@ -199,9 +203,9 @@ def main():
     parser.add_argument("--image-size", type=int, default=256)
     parser.add_argument("--style-size", type=int, default=None)
     parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--style-image", type=str, default="images/style-images/mosaic.jpg")
-    parser.add_argument("--content-weight", type=float, default=1.)
-    parser.add_argument("--style-weight", type=float, default=100.)
+    parser.add_argument("--style-image", type=str, default="images/style-images/wave.jpg")
+    parser.add_argument("--content-weight", type=float, default=1.0)
+    parser.add_argument("--style-weight", type=float, default=5.0)
     parser.add_argument("--log-interval", type=int, default=500)
     parser.add_argument("--checkpoint-dir", type=str, required=True)
     parser.add_argument("--train", type=int, default=1)

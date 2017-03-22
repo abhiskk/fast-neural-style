@@ -3,6 +3,7 @@ import sys
 
 import torch
 from torch.utils.serialization import load_lua
+from torch.autograd import Variable
 
 from vgg16 import Vgg16
 
@@ -53,12 +54,12 @@ def deprocess_img_and_save(img, filename):
 
 def subtract_imagenet_mean_batch(batch):
     """Subtract ImageNet mean pixel-wise from a BGR image."""
-    tensortype = type(batch)
-    mean = tensortype(batch.size())
+    tensortype = type(batch.data)
+    mean = tensortype(batch.data.size())
     mean[:, 0, :, :] = 103.939
     mean[:, 1, :, :] = 116.779
     mean[:, 2, :, :] = 123.680
-    batch -= mean
+    batch -= Variable(mean)
 
 
 def preprocess_batch(batch):
@@ -66,7 +67,6 @@ def preprocess_batch(batch):
     (r, g, b) = torch.chunk(batch, 3)
     batch = torch.cat((b, g, r))
     batch = batch.transpose(0, 1)
-    subtract_imagenet_mean_batch(batch)
     return batch
 
 
