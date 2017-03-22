@@ -49,7 +49,6 @@ def train(args):
                                     transforms.ToTensor(),
                                     transforms.Lambda(lambda x: x.mul(255))])
     train_dataset = datasets.ImageFolder(args.dataset, transform)
-    # TODO: Add shuffling of data
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, **kwargs)
 
     transformer = TransformerNet()
@@ -70,6 +69,7 @@ def train(args):
     if args.cuda:
         style = style.cuda()
     style_v = Variable(style, volatile=True)
+    utils.subtract_imagenet_mean_batch(style_v)
     features_style = vgg(style_v)
     gram_style = [utils.gram_matrix(y) for y in features_style]
 
@@ -89,6 +89,9 @@ def train(args):
             y = transformer(x)
 
             xc = Variable(x.data.clone(), volatile=True)
+
+            utils.subtract_imagenet_mean_batch(y)
+            utils.subtract_imagenet_mean_batch(xc)
 
             features_y = vgg(y)
             features_xc = vgg(xc)
@@ -112,40 +115,14 @@ def train(args):
 
             if (batch_id + 1) % args.log_interval == 0:
 
-                # TODO: Save some stylized images from the training set
+
 
                 mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent:{:.6f}\tstyle:{:.6f}".format(
                     time.ctime(), e + 1, count, len(train_dataset),
                     agg_content_loss / (batch_id + 1),
                     agg_style_loss / (batch_id + 1)
                 )
-                if args.validation:
-                    if args.cuda:
-                        utils.deprocess_img_and_save(x.cpu().data.numpy(),
-                                                     args.val_dir + "/epoch_original_" + str(e + 1) + "_"
-                                                     + str(time.ctime()).replace(' ', '_') + "_"
-                                                     + str(args.content_weight) + "_" + str(args.style_weight)
-                                                     + ".jpg"
-                                                     )
-                        utils.deprocess_img_and_save(y.cpu().data.numpy(),
-                                                     args.val_dir + "/epoch_stylized_" + str(e + 1) + "_"
-                                                     + str(time.ctime()).replace(' ', '_') + "_"
-                                                     + str(args.content_weight) + "_" + str(args.style_weight)
-                                                     + ".jpg")
-                    else:
-                        utils.deprocess_img_and_save(x.data.numpy(),
-                                                     args.val_dir + "/epoch_original_" + str(e + 1) + "_"
-                                                     + str(time.ctime()).replace(' ', '_') + "_"
-                                                     + str(args.content_weight) + "_" + str(args.style_weight)
-                                                     + ".jpg"
-                                                     )
-                        utils.deprocess_img_and_save(y.data.numpy(),
-                                                     args.val_dir + "/epoch_stylized_" + str(e + 1) + "_"
-                                                     + str(time.ctime()).replace(' ', '_') + "_"
-                                                     + str(args.content_weight) + "_" + str(args.style_weight)
-                                                     + ".jpg")
                 print(mesg)
-
 
         torch.save(transformer, args.checkpoint_dir + "/epoch_" + str(e + 1) + "_"
                    + str(time.ctime()).replace(' ', '_') + "_"
@@ -153,37 +130,6 @@ def train(args):
                    + ".model")
 
     print("\nDone :)")
-
-
-def stylize(args):
-    print("=====================")
-    print("PYTHON VERSION:", sys.version)
-    print("PYTORCH VERSION:", torch.__version__)
-    print("CUDA:", args.cuda)
-    print("SAVED MODEL PATH:", args.saved_model_path)
-    print("CONTENT IMAGE:", args.content_image)
-    print("IMAGE SIZE:", args.image_size)
-    print("SAVE IMAGE PATH:", args.save_image_path)
-    print("=====================\n")
-
-    model = torch.load(args.saved_model_path)
-    model.eval()
-    print("-" * 50)
-    print(model)
-    print("-" * 50 + "\n")
-
-    content = utils.tensor_load_rgbimage(args.content_image, args.image_size)
-    content = content.unsqueeze(0)
-    content = utils.preprocess_batch(content)
-    if args.cuda:
-        content = content.cuda()
-    content = Variable(content)
-    stylized_content = model(content)
-    if args.cuda:
-        stylized_content = stylized_content.cpu()
-
-    utils.deprocess_img_and_save(stylized_content.data.numpy(), args.save_image_path)
-    print("Styled image saved at:", args.save_image_path)
 
 
 def main():
@@ -199,9 +145,9 @@ def main():
     parser.add_argument("--image-size", type=int, default=256)
     parser.add_argument("--style-size", type=int, default=None)
     parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--style-image", type=str, default="images/style-images/mosaic.jpg")
-    parser.add_argument("--content-weight", type=float, default=1.)
-    parser.add_argument("--style-weight", type=float, default=100.)
+    parser.add_argument("--style-image", type=str, default="images/style-images/wave.jpg")
+    parser.add_argument("--content-weight", type=float, default=1.0)
+    parser.add_argument("--style-weight", type=float, default=5.0)
     parser.add_argument("--log-interval", type=int, default=500)
     parser.add_argument("--checkpoint-dir", type=str, required=True)
     parser.add_argument("--train", type=int, default=1)
@@ -214,10 +160,7 @@ def main():
         print("WARNING: torch.cuda not available, using CPU.")
         args.cuda = 0
 
-    if args.train:
-        train(args)
-    else:
-        stylize(args)
+    train(args)
 
 
 if __name__ == "__main__":
