@@ -9,8 +9,6 @@ from vgg16 import Vgg16
 
 import numpy as np
 from PIL import Image
-from scipy.misc import imread, imsave, imresize
-from scipy.ndimage.filters import median_filter
 
 
 # result: RGB CxHxW [0,255] torch.FloatTensor
@@ -31,25 +29,17 @@ def gram_matrix(y):
     return gram
 
 
-def add_imagenet_mean(img):
-    """Add ImageNet mean pixel-wise to a BGR image."""
-    img[0, :, :] += 103.939
-    img[1, :, :] += 116.779
-    img[2, :, :] += 123.68
+def tensor_save_rgbimage(tensor, filename):
+    img = tensor.clone().cpu().clamp(0, 255).numpy()
+    img = img.transpose(1, 2, 0).astype('uint8')
+    img = Image.fromarray(img)
+    img.save(filename)
 
 
-def deprocess_img_and_save(img, filename):
-    """Undo pre-processing on an image, and save it."""
-    img = img[0, :, :, :]
-    add_imagenet_mean(img)
-    img = img[::-1].transpose((1, 2, 0))
-    img = np.clip(img, 0, 255).astype(np.uint8)
-    img = median_filter(img, size=(3, 3, 1))
-    try:
-        imsave(filename, img)
-    except OSError as e:
-        print(e)
-        sys.exit(1)
+def tensor_save_bgrimage(tensor, filename):
+    (b, g, r) = torch.chunk(tensor, 3)
+    tensor = torch.cat((r, g, b))
+    tensor_save_rgbimage(tensor, filename)
 
 
 def subtract_imagenet_mean_batch(batch):
@@ -79,5 +69,5 @@ def init_vgg16(model_folder):
         vgglua = load_lua(model_folder + '/vgg16.t7')
         vgg = Vgg16()
         for (src, dst) in zip(vgglua.parameters()[0], vgg.parameters()):
-            dst[:].data = src[:]
+            dst.data = src.clone()
         torch.save(vgg.state_dict(), model_folder + '/vgg16.weight')
