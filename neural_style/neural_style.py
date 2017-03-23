@@ -114,9 +114,6 @@ def train(args):
             agg_style_loss += style_loss.data[0]
 
             if (batch_id + 1) % args.log_interval == 0:
-
-
-
                 mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent:{:.6f}\tstyle:{:.6f}".format(
                     time.ctime(), e + 1, count, len(train_dataset),
                     agg_content_loss / (batch_id + 1),
@@ -124,10 +121,13 @@ def train(args):
                 )
                 print(mesg)
 
-        torch.save(transformer, args.checkpoint_dir + "/epoch_" + str(e + 1) + "_"
-                   + str(time.ctime()).replace(' ', '_') + "_"
-                   + str(args.content_weight) + "_" + str(args.style_weight)
-                   + ".model")
+    # save model
+    transformer.eval()
+    transformer.cpu()
+    torch.save(transformer, args.checkpoint_dir + "/epoch_" + str(args.epochs) + "_"
+               + str(time.ctime()).replace(' ', '_') + "_"
+               + str(args.content_weight) + "_" + str(args.style_weight)
+               + ".model")
 
     print("\nDone :)")
 
@@ -136,6 +136,7 @@ def main():
     parser = argparse.ArgumentParser(description="parser for fast-neural-style")
     parser.add_argument("--validation", type=int, required=True)
     parser.add_argument("--val-dir", type=str, default=None)
+    parser.add_argument("--val-image", type=str, default=None)
     parser.add_argument("--batch-size", "-b", type=int, default=4)
     parser.add_argument("--epochs", "-e", type=int, default=2)
     parser.add_argument("--vgg-model", "-m", type=str, required=True)
