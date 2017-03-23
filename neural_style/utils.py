@@ -1,14 +1,12 @@
 import os
-import sys
-
-import torch
-from torch.utils.serialization import load_lua
-from torch.autograd import Variable
-
-from vgg16 import Vgg16
 
 import numpy as np
+import torch
 from PIL import Image
+from torch.autograd import Variable
+from torch.utils.serialization import load_lua
+
+from vgg16 import Vgg16
 
 
 # result: RGB CxHxW [0,255] torch.FloatTensor
@@ -62,12 +60,12 @@ def preprocess_batch(batch):
 
 def init_vgg16(model_folder):
     """load the vgg16 model feature"""
-    if not os.path.exists(model_folder + '/vgg16.weight'):
-        if not os.path.exists(model_folder + '/vgg16.t7'):
+    if not os.path.exists(os.path.join(model_folder, 'vgg16.weight')):
+        if not os.path.exists(os.path.join(model_folder, 'vgg16.t7')):
             os.system(
-                'wget http://cs.stanford.edu/people/jcjohns/fast-neural-style/models/vgg16.t7 -O ' + model_folder + '/vgg16.t7')
-        vgglua = load_lua(model_folder + '/vgg16.t7')
+                'wget http://cs.stanford.edu/people/jcjohns/fast-neural-style/models/vgg16.t7 -O ' + os.path.join(model_folder, 'vgg16.t7'))
+        vgglua = load_lua(os.path.join(model_folder, 'vgg16.t7'))
         vgg = Vgg16()
         for (src, dst) in zip(vgglua.parameters()[0], vgg.parameters()):
             dst.data[:] = src
-        torch.save(vgg.state_dict(), model_folder + '/vgg16.weight')
+        torch.save(vgg.state_dict(), os.path.join(model_folder, 'vgg16.weight'))
