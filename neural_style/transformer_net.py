@@ -76,10 +76,11 @@ class InstanceNormalization(torch.nn.Module):
     ref: https://arxiv.org/pdf/1607.08022.pdf
     """
 
-    def __init__(self, dim):
+    def __init__(self, dim, eps=1e-9):
         super(InstanceNormalization, self).__init__()
         self.scale = nn.Parameter(torch.FloatTensor(dim))
         self.shift = nn.Parameter(torch.FloatTensor(dim))
+        self.eps = eps
         self._reset_parameters()
 
     def _reset_parameters(self):
@@ -96,6 +97,6 @@ class InstanceNormalization(torch.nn.Module):
         scale_broadcast = scale_broadcast.expand_as(x)
         shift_broadcast = self.shift.unsqueeze(1).unsqueeze(1).unsqueeze(0)
         shift_broadcast = shift_broadcast.expand_as(x)
-        out = (x - mean) / torch.sqrt(var + 1e-9)
-        out = (out * scale_broadcast) + shift_broadcast
+        out = (x - mean) / torch.sqrt(var + self.eps)
+        out =  out * scale_broadcast + shift_broadcast
         return out
