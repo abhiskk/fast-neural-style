@@ -114,9 +114,6 @@ def train(args):
             agg_style_loss += style_loss.data[0]
 
             if (batch_id + 1) % args.log_interval == 0:
-
-
-
                 mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent:{:.6f}\tstyle:{:.6f}".format(
                     time.ctime(), e + 1, count, len(train_dataset),
                     agg_content_loss / (batch_id + 1),
@@ -136,6 +133,7 @@ def main():
     parser = argparse.ArgumentParser(description="parser for fast-neural-style")
     parser.add_argument("--validation", type=int, required=True)
     parser.add_argument("--val-dir", type=str, default=None)
+    parser.add_argument("--val-image", type=str, default=None)
     parser.add_argument("--batch-size", "-b", type=int, default=4)
     parser.add_argument("--epochs", "-e", type=int, default=2)
     parser.add_argument("--vgg-model", "-m", type=str, required=True)
@@ -143,7 +141,7 @@ def main():
     parser.add_argument("--cuda", type=int, required=True)
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--image-size", type=int, default=256)
-    parser.add_argument("--style-size", type=int, default=None)
+    parser.add_argument("--style-size", type=int, default=256)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--style-image", type=str, default="images/style-images/wave.jpg")
     parser.add_argument("--content-weight", type=float, default=1.0)
