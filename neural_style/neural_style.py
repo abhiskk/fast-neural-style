@@ -144,7 +144,7 @@ def main():
     parser.add_argument("--cuda", type=int, required=True)
     parser.add_argument("--dataset", type=str, required=True)
     parser.add_argument("--image-size", type=int, default=256)
-    parser.add_argument("--style-size", type=int, default=256)
+    parser.add_argument("--style-size", type=int, default=None)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--style-image", type=str, default="images/style-images/wave.jpg")
     parser.add_argument("--content-weight", type=float, default=1.0)
