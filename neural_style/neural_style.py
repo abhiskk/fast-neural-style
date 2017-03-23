@@ -121,10 +121,13 @@ def train(args):
                 )
                 print(mesg)
 
-        torch.save(transformer, args.checkpoint_dir + "/epoch_" + str(e + 1) + "_"
-                   + str(time.ctime()).replace(' ', '_') + "_"
-                   + str(args.content_weight) + "_" + str(args.style_weight)
-                   + ".model")
+    # save model
+    transformer.eval()
+    transformer.cpu()
+    torch.save(transformer, args.checkpoint_dir + "/epoch_" + str(args.epochs) + "_"
+               + str(time.ctime()).replace(' ', '_') + "_"
+               + str(args.content_weight) + "_" + str(args.style_weight)
+               + ".model")
 
     print("\nDone :)")
 
