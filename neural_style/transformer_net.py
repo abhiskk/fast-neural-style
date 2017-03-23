@@ -1,4 +1,3 @@
-import numpy as np
 import torch
 import torch.nn as nn
 
@@ -98,5 +97,5 @@ class InstanceNormalization(torch.nn.Module):
         shift_broadcast = self.shift.unsqueeze(1).unsqueeze(1).unsqueeze(0)
         shift_broadcast = shift_broadcast.expand_as(x)
         out = (x - mean) / torch.sqrt(var + self.eps)
-        out =  out * scale_broadcast + shift_broadcast
+        out = out * scale_broadcast + shift_broadcast
         return out

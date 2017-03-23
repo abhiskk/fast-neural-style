@@ -1,24 +1,29 @@
 import argparse
+import os
+import sys
+import time
 
 import numpy as np
 import torch
 from torch.autograd import Variable
 from torch.optim import Adam
 from torch.utils.data import DataLoader
-from torchvision import transforms
 from torchvision import datasets
+from torchvision import transforms
 
+import utils
 from transformer_net import TransformerNet
 from vgg16 import Vgg16
-import utils
-import os
-import sys
-import time
 
 
 def train(args):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
+
+    if args.cuda and not torch.cuda.is_available():
+        print("WARNING: torch.cuda not available, using CPU.")
+        args.cuda = 0
+
     if args.cuda:
         torch.cuda.manual_seed(args.seed)
         kwargs = {'num_workers': 0, 'pin_memory': False}
@@ -38,9 +43,7 @@ def train(args):
     print("CONTENT WEIGHT:", args.content_weight)
     print("STYLE WEIGHT:", args.style_weight)
     print("DATASET:", args.dataset)
-    print("CHECKPOINT DIR:", args.checkpoint_dir)
-    print("VALIDATION:", args.validation)
-    print("VAL DIR:", args.val_dir)
+    print("SAVE-MODEL DIRECTORY:", args.save_model_dir)
     print("STYLE SIZE:", args.style_size)
     print("=====================\n")
 
@@ -104,7 +107,7 @@ def train(args):
             for m in range(len(features_y)):
                 gram_s = Variable(gram_style[m].data, requires_grad=False)
                 gram_y = utils.gram_matrix(features_y[m])
-                style_loss += args.style_weight * mse_loss(gram_y, gram_s[:n_batch,:,:])
+                style_loss += args.style_weight * mse_loss(gram_y, gram_s[:n_batch, :, :])
 
             total_loss = content_loss + style_loss
             total_loss.backward()
@@ -114,29 +117,39 @@ def train(args):
             agg_style_loss += style_loss.data[0]
 
             if (batch_id + 1) % args.log_interval == 0:
-                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent:{:.6f}\tstyle:{:.6f}".format(
+                mesg = "{}\tEpoch {}:\t[{}/{}]\tcontent: {:.6f}\tstyle: {:.6f}\ttotal: {:.6f}".format(
                     time.ctime(), e + 1, count, len(train_dataset),
-                    agg_content_loss / (batch_id + 1),
-                    agg_style_loss / (batch_id + 1)
+                                  agg_content_loss / (batch_id + 1),
+                                  agg_style_loss / (batch_id + 1),
+                                  (agg_content_loss + agg_style_loss) / (batch_id + 1)
                 )
                 print(mesg)
 
     # save model
     transformer.eval()
     transformer.cpu()
-    torch.save(transformer, args.checkpoint_dir + "/epoch_" + str(args.epochs) + "_"
-               + str(time.ctime()).replace(' ', '_') + "_"
-               + str(args.content_weight) + "_" + str(args.style_weight)
-               + ".model")
+    save_model_filename = "epoch_" + str(args.epochs) + "_" + str(time.ctime()).replace(' ', '_') + "_" + str(
+        args.content_weight) + "_" + str(args.style_weight) + ".model"
+    save_model_path = os.path.join(args.save_model_dir, save_model_filename)
+    torch.save(transformer, save_model_path)
 
     print("\nDone :)")
 
 
+def check_paths(args):
+    flag_exit = 0
+    if not os.path.exists(args.vgg_model):
+        print("ERROR: Directory", "\"" + args.vgg_model + "\"", "doesn't exist. Please create the directory.")
+        flag_exit = 1
+    if not os.path.exists(args.save_model_dir):
+        print("ERROR: Directory", "\"" + args.save_model_dir + "\"", "doesn't exist. Please create the directory.")
+        flag_exit = 1
+    if flag_exit:
+        sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser(description="parser for fast-neural-style")
-    parser.add_argument("--validation", type=int, required=True)
-    parser.add_argument("--val-dir", type=str, default=None)
-    parser.add_argument("--val-image", type=str, default=None)
     parser.add_argument("--batch-size", "-b", type=int, default=4)
     parser.add_argument("--epochs", "-e", type=int, default=2)
     parser.add_argument("--vgg-model", "-m", type=str, required=True)
@@ -150,16 +163,11 @@ def main():
     parser.add_argument("--content-weight", type=float, default=1.0)
     parser.add_argument("--style-weight", type=float, default=5.0)
     parser.add_argument("--log-interval", type=int, default=500)
-    parser.add_argument("--checkpoint-dir", type=str, required=True)
+    parser.add_argument("--save-model-dir", type=str, required=True)
     parser.add_argument("--train", type=int, default=1)
-    parser.add_argument("--saved-model-path", type=str, default=None)
-    parser.add_argument("--content-image", type=str, default=None)
-    parser.add_argument("--save-image-path", type=str, default=None)
-    args = parser.parse_args()
 
-    if args.cuda and not torch.cuda.is_available():
-        print("WARNING: torch.cuda not available, using CPU.")
-        args.cuda = 0
+    args = parser.parse_args()
+    check_paths(args)
 
     train(args)
 
