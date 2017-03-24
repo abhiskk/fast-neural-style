@@ -1,6 +1,4 @@
-# fast-neural-style
-
-:city_sunrise: :rocket:
+# fast-neural-style :city_sunrise: :rocket:
 
 Train model
 
