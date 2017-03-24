@@ -66,7 +66,7 @@ def train(args):
         transformer.cuda()
         vgg.cuda()
 
-    style = utils.tensor_load_rgbimage(args.style_image, args.style_size)
+    style = utils.tensor_load_rgbimage(args.style_image, size=args.style_size)
     style = style.repeat(args.batch_size, 1, 1, 1)
     style = utils.preprocess_batch(style)
     if args.cuda:
@@ -148,7 +148,7 @@ def check_paths(args):
 
 
 def stylize(args):
-    content_image = utils.tensor_load_rgbimage(args.content_image, args.content_size)
+    content_image = utils.tensor_load_rgbimage(args.content_image, scale=args.content_scale)
     content_image = content_image.unsqueeze(0)
     content_image = Variable(utils.preprocess_batch(content_image))
     style_model = torch.load(args.model)
@@ -178,7 +178,7 @@ def main():
 
     eval_arg_parser = subparsers.add_parser("eval")
     eval_arg_parser.add_argument("--content-image", type=str, required=True)
-    eval_arg_parser.add_argument("--content-size", type=int, default=None)
+    eval_arg_parser.add_argument("--content-scale", type=float, default=None)
     eval_arg_parser.add_argument("--output-image", type=str, required=True)
     eval_arg_parser.add_argument("--model", type=str, required=True)
 
