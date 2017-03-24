@@ -59,14 +59,14 @@ def train(args):
     mse_loss = torch.nn.MSELoss()
 
     vgg = Vgg16()
-    utils.init_vgg16(args.vgg_model)
-    vgg.load_state_dict(torch.load(os.path.join(args.vgg_model, "vgg16.weight")))
+    utils.init_vgg16(args.vgg_model_dir)
+    vgg.load_state_dict(torch.load(os.path.join(args.vgg_model_dir, "vgg16.weight")))
 
     if args.cuda:
         transformer.cuda()
         vgg.cuda()
 
-    style = utils.tensor_load_rgbimage(args.style_image, args.style_size)
+    style = utils.tensor_load_rgbimage(args.style_image, size=args.style_size)
     style = style.repeat(args.batch_size, 1, 1, 1)
     style = utils.preprocess_batch(style)
     if args.cuda:
@@ -137,39 +137,62 @@ def train(args):
 
 
 def check_paths(args):
-    flag_exit = 0
-    if not os.path.exists(args.vgg_model):
-        print("ERROR: Directory", "\"" + args.vgg_model + "\"", "doesn't exist. Please create the directory.")
-        flag_exit = 1
-    if not os.path.exists(args.save_model_dir):
-        print("ERROR: Directory", "\"" + args.save_model_dir + "\"", "doesn't exist. Please create the directory.")
-        flag_exit = 1
-    if flag_exit:
+    try:
+        if not os.path.exists(args.vgg_model_dir):
+            os.makedirs(args.vgg_model_dir)
+        if not os.path.exists(args.save_model_dir):
+            os.makedirs(args.save_model_dir)
+    except OSError as e:
+        print(e)
         sys.exit(1)
 
 
+def stylize(args):
+    content_image = utils.tensor_load_rgbimage(args.content_image, scale=args.content_scale)
+    content_image = content_image.unsqueeze(0)
+    content_image = Variable(utils.preprocess_batch(content_image))
+    style_model = torch.load(args.model)
+    output = style_model(content_image)
+    utils.tensor_save_bgrimage(output.data[0], args.output_image)
+
+
 def main():
-    parser = argparse.ArgumentParser(description="parser for fast-neural-style")
-    parser.add_argument("--batch-size", "-b", type=int, default=4)
-    parser.add_argument("--epochs", "-e", type=int, default=2)
-    parser.add_argument("--vgg-model", "-m", type=str, required=True)
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--cuda", type=int, required=True)
-    parser.add_argument("--dataset", type=str, required=True)
-    parser.add_argument("--image-size", type=int, default=256)
-    parser.add_argument("--style-size", type=int, default=None)
-    parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--style-image", type=str, default="images/style-images/wave.jpg")
-    parser.add_argument("--content-weight", type=float, default=1.0)
-    parser.add_argument("--style-weight", type=float, default=5.0)
-    parser.add_argument("--log-interval", type=int, default=500)
-    parser.add_argument("--save-model-dir", type=str, required=True)
-    parser.add_argument("--train", type=int, default=1)
+    main_arg_parser = argparse.ArgumentParser(description="parser for fast-neural-style")
+    subparsers = main_arg_parser.add_subparsers(title="subcommands", dest="subcommand")
 
-    args = parser.parse_args()
-    check_paths(args)
+    train_arg_parser = subparsers.add_parser("train")
+    train_arg_parser.add_argument("--batch-size", type=int, default=4)
+    train_arg_parser.add_argument("--epochs", type=int, default=2)
+    train_arg_parser.add_argument("--vgg-model-dir", type=str, required=True)
+    train_arg_parser.add_argument("--seed", type=int, default=42)
+    train_arg_parser.add_argument("--cuda", type=int, required=True)
+    train_arg_parser.add_argument("--dataset", type=str, required=True)
+    train_arg_parser.add_argument("--image-size", type=int, default=256)
+    train_arg_parser.add_argument("--style-size", type=int, default=None)
+    train_arg_parser.add_argument("--lr", type=float, default=1e-3)
+    train_arg_parser.add_argument("--style-image", type=str, default="images/style-images/mosaic.jpg")
+    train_arg_parser.add_argument("--content-weight", type=float, default=1.0)
+    train_arg_parser.add_argument("--style-weight", type=float, default=5.0)
+    train_arg_parser.add_argument("--log-interval", type=int, default=500)
+    train_arg_parser.add_argument("--save-model-dir", type=str, required=True)
 
-    train(args)
+    eval_arg_parser = subparsers.add_parser("eval")
+    eval_arg_parser.add_argument("--content-image", type=str, required=True)
+    eval_arg_parser.add_argument("--content-scale", type=float, default=None)
+    eval_arg_parser.add_argument("--output-image", type=str, required=True)
+    eval_arg_parser.add_argument("--model", type=str, required=True)
+
+    args = main_arg_parser.parse_args()
+
+    if args.subcommand is None:
+        print("ERROR: specify either train or eval")
+        sys.exit(1)
+
+    if args.subcommand == "train":
+        check_paths(args)
+        train(args)
+    else:
+        stylize(args)
 
 
 if __name__ == "__main__":

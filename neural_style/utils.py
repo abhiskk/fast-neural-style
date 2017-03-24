@@ -10,10 +10,12 @@ from vgg16 import Vgg16
 
 
 # result: RGB CxHxW [0,255] torch.FloatTensor
-def tensor_load_rgbimage(filename, size=None):
+def tensor_load_rgbimage(filename, size=None, scale=None):
     img = Image.open(filename)
     if size is not None:
         img = img.resize((size, size), Image.ANTIALIAS)
+    elif scale is not None:
+        img = img.resize((int(img.size[0] / scale), int(img.size[1] / scale)), Image.ANTIALIAS)
     img = np.array(img).transpose(2, 0, 1)
     img = torch.from_numpy(img).float()
     return img
