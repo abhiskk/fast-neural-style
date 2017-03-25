@@ -48,7 +48,6 @@ class TransformerNet(torch.nn.Module):
         return y
 
 
-
 class ConvLayer(torch.nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride):
         super(ConvLayer, self).__init__()
@@ -107,7 +106,6 @@ class UpsampleConvLayer(torch.nn.Module):
         out = self.reflection_pad(x_in)
         out = self.conv2d(out)
         return out
-
 
 
 class InstanceNormalization(torch.nn.Module):
