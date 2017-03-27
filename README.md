@@ -1,5 +1,8 @@
 # fast-neural-style :city_sunrise: :rocket:
 
+## Requirements
+The program is written in Python, and uses [PyTorch](http://pytorch.org/), [Scipy](https://www.scipy.org). A GPU is not necessary, but can provide a significant speed up specially for training a new model. Regular sized images can be styled on a regular laptop, desktop using saved models.
+
 ## Usage
 Stylize image
 ```
