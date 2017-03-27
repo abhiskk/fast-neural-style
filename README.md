@@ -1,4 +1,5 @@
 # fast-neural-style :city_sunrise: :rocket:
+This repository contains PyTorch implementation of an algorithm for artistic style transfer. The algorithms can be used to mix the content of an image with the style of another image. For example, here is a photograph of a door arch rendered in the style of a stained glass painting.
 
 <p align="center">
     <img src="images/style-images/mosaic.jpg" height="200px">
