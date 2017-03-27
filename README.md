@@ -1,5 +1,11 @@
 # fast-neural-style :city_sunrise: :rocket:
 
+<p align="center">
+    <img src="images/style-images/mosaic.jpg" height="236px">
+    <img src="images/content-images/amber.jpg" height="236px">
+    <img src="images/output-images/amber-mosaic.jpg" height="400px">
+</p>
+
 ## Requirements
 The program is written in Python, and uses [PyTorch](http://pytorch.org/), [Scipy](https://www.scipy.org). A GPU is not necessary, but can provide a significant speed up specially for training a new model. Regular sized images can be styled on a regular laptop, desktop using saved models.
 
@@ -19,7 +25,7 @@ python neural_style/neural_style.py train --dataset </path/to/train-dataset> --v
 ```
 
 There are several command line arguments, the important ones are listed below
-* `--dataset`: path to training dataset, I used COCO 2014 Training images dataset [80K/13GB] [[download]](http://mscoco.org/dataset/#download).
+* `--dataset`: path to training dataset, I used COCO 2014 Training images dataset [80K/13GB] [(download)](http://mscoco.org/dataset/#download).
 * `--vgg`: path to folder where the vgg model will be downloaded.
 * `--save-model-dir`: path to folder where trained model will be saved
 * `--epochs`: train for these many iterations. The default is 2.
