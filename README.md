@@ -45,4 +45,6 @@ Refer to ``neural_style/neural_style.py`` for other command line arguments.
 <div align='center'>
   <img src='images/style-images/mosaic.jpg' height="174px">
   <img src='images/output-images/chicago-mosaic.jpg' height="174px">
+  <img src='images/output-images/chicago-candy.jpg' height="174px">
+  <img src='images/style-images/candy.jpg' height="174px">
 </div>
