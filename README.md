@@ -39,6 +39,10 @@ Refer to ``neural_style/neural_style.py`` for other command line arguments.
 ## Models
 
 <div align='center'>
+  <img src='images/content-images/chicago.jpg' height="174px">
+</div>
+
+<div align='center'>
   <img src='images/style-images/mosaic.jpg' height="174px">
   <img src='images/output-images/chicago-mosaic.jpg' height="174px">
 </div>
