@@ -35,3 +35,10 @@ There are several command line arguments, the important ones are listed below
 * `--cuda`: set it to 1 for running on GPU, 0 for CPU.
 
 Refer to ``neural_style/neural_style.py`` for other command line arguments.
+
+## Models
+
+<div align='center'>
+  <img src='images/style-images/mosaic.jpg' height="174px">
+  <img src='images/output-images/chicago-mosaic.jpg' height="174px">
+</div>
