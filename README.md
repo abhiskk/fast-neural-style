@@ -1,8 +1,8 @@
 # fast-neural-style :city_sunrise: :rocket:
 
 <p align="center">
-    <img src="images/style-images/mosaic.jpg" height="198px">
-    <img src="images/content-images/amber.jpg" height="198px">
+    <img src="images/style-images/mosaic.jpg" height="200px">
+    <img src="images/content-images/amber.jpg" height="200px">
     <img src="images/output-images/amber-mosaic.jpg" height="440px">
 </p>
 
