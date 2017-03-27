@@ -9,7 +9,6 @@ from torch.utils.serialization import load_lua
 from vgg16 import Vgg16
 
 
-# result: RGB CxHxW [0,255] torch.FloatTensor
 def tensor_load_rgbimage(filename, size=None, scale=None):
     img = Image.open(filename)
     if size is not None:
@@ -19,14 +18,6 @@ def tensor_load_rgbimage(filename, size=None, scale=None):
     img = np.array(img).transpose(2, 0, 1)
     img = torch.from_numpy(img).float()
     return img
-
-
-def gram_matrix(y):
-    (b, ch, h, w) = y.size()
-    features = y.view(b, ch, w * h)
-    features_t = features.transpose(1, 2)
-    gram = features.bmm(features_t) / (ch * h * w)
-    return gram
 
 
 def tensor_save_rgbimage(tensor, filename):
@@ -40,6 +31,14 @@ def tensor_save_bgrimage(tensor, filename):
     (b, g, r) = torch.chunk(tensor, 3)
     tensor = torch.cat((r, g, b))
     tensor_save_rgbimage(tensor, filename)
+
+
+def gram_matrix(y):
+    (b, ch, h, w) = y.size()
+    features = y.view(b, ch, w * h)
+    features_t = features.transpose(1, 2)
+    gram = features.bmm(features_t) / (ch * h * w)
+    return gram
 
 
 def subtract_imagenet_mean_batch(batch):
