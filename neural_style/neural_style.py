@@ -195,11 +195,11 @@ def main():
     eval_arg_parser.add_argument("--content-image", type=str, required=True,
                                  help="path to content image you want to stylize")
     eval_arg_parser.add_argument("--content-scale", type=float, default=None,
-                                 help="saved model to be used for stylizing the image")
+                                 help="factor for scaling down the content image")
     eval_arg_parser.add_argument("--output-image", type=str, required=True,
                                  help="path for saving the output image")
     eval_arg_parser.add_argument("--model", type=str, required=True,
-                                 help="factor for scaling down the content image")
+                                 help="saved model to be used for stylizing the image")
 
     args = main_arg_parser.parse_args()
 
