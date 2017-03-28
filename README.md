@@ -24,11 +24,10 @@ python neural_style/neural_style.py eval --content-image </path/to/content/image
 
 Train model
 ```bash
-python neural_style/neural_style.py train --dataset </path/to/train-dataset> --vgg </path/to/vgg/folder> --save-model-dir </path/to/save-models/folder> --epochs 2 --cuda 1
+python neural_style/neural_style.py train --dataset </path/to/train-dataset> --style-image </path/to/style/image> --vgg-model-dir </path/to/vgg/folder> --save-model-dir </path/to/save-models/folder> --epochs 2 --cuda 1
 ```
 
 There are several command line arguments, the important ones are listed below
-* `--epochs`: train for these many iterations. The default is 2.
 * `--dataset`: path to training dataset, the path should point to a folder containing another folder with all the training images. I used COCO 2014 Training images dataset [80K/13GB] [(download)](http://mscoco.org/dataset/#download).
 * `--style-image`: path to style-image.
 * `--vgg-model-dir`: path to folder where the vgg model will be downloaded.
