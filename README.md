@@ -50,8 +50,8 @@ The ``saved-models`` folder contains different style-models that you can use for
   <img src='images/output-images/amber-candy.jpg' height="174px">
   <img src='images/style-images/candy.jpg' height="174px">
   <br>
-  <img src='images/style-images/udnie.jpg' height="174px">
-  <img src='images/output-images/amber-udnie.jpg' height="174px">
-  <img src='images/output-images/amber-starry-night.jpg' height="174px">
   <img src='images/style-images/starry-night-cropped.jpg' height="174px">
+  <img src='images/output-images/amber-starry-night.jpg' height="174px">
+  <img src='images/output-images/amber-udnie.jpg' height="174px">
+  <img src='images/style-images/udnie.jpg' height="174px">
 </div>
