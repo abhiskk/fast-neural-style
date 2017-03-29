@@ -10,17 +10,18 @@ The model uses the method described in [Perceptual Losses for Real-Time Style Tr
 </p>
 
 ## Requirements
-The program is written in Python, and uses [pytorch](http://pytorch.org/), [Scipy](https://www.scipy.org). A GPU is not necessary, but can provide a significant speed up especially for training a new model. Regular sized images can be styled on a laptop, desktop using saved models.
+The program is written in Python, and uses [pytorch](http://pytorch.org/), [scipy](https://www.scipy.org). A GPU is not necessary, but can provide a significant speed up especially for training a new model. Regular sized images can be styled on a laptop, desktop using saved models.
 
 ## Usage
 Stylize image
 ```
-python neural_style/neural_style.py eval --content-image </path/to/content/image> --model </path/to/saved/model> --output-image </path/to/output/image>
+python neural_style/neural_style.py eval --content-image </path/to/content/image> --model </path/to/saved/model> --output-image </path/to/output/image> --cuda 0
 ```
 * `--content-image`: path to content image you want to stylize.
 * `--model`: saved model to be used for stylizing the image (eg: `mosaic.model` present under `saved-models/`)
 * `--output-image`: path for saving the output image.
 * `--content-scale`: factor for scaling down the content image if memory is an issue (eg: value of 2 will half the height and width of content-image)
+* `--cuda`: set it to 1 for running on GPU, 0 for CPU.
 
 Train model
 ```bash
