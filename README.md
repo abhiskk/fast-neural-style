@@ -10,7 +10,7 @@ The model uses the method described in [Perceptual Losses for Real-Time Style Tr
 </p>
 
 ## Requirements
-The program is written in Python, and uses [pytorch](http://pytorch.org/), [Scipy](https://www.scipy.org). A GPU is not necessary, but can provide a significant speed up especially for training a new model. Regular sized images can be styled on a laptop, desktop using saved models.
+The program is written in Python, and uses [pytorch](http://pytorch.org/), [scipy](https://www.scipy.org). A GPU is not necessary, but can provide a significant speed up especially for training a new model. Regular sized images can be styled on a laptop, desktop using saved models.
 
 ## Usage
 Stylize image
