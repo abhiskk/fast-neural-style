@@ -132,9 +132,9 @@ def check_paths(args):
 
 def stylize(args):
     content_image = utils.tensor_load_rgbimage(args.content_image, scale=args.content_scale)
-    content_image = content_image.unsqueeze(0)
+    content_image = content_image.unsqueeze(0).cuda()
     content_image = Variable(utils.preprocess_batch(content_image))
-    style_model = torch.load(args.model)
+    style_model = torch.load(args.model).cuda()
     output = style_model(content_image)
     utils.tensor_save_bgrimage(output.data[0], args.output_image)
 
