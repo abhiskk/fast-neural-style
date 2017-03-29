@@ -131,10 +131,22 @@ def check_paths(args):
 
 
 def stylize(args):
+
+    if args.cuda and not torch.cuda.is_available():
+        print("ERROR: cuda is not available, try running on CPU")
+        sys.exit(1)
+
     content_image = utils.tensor_load_rgbimage(args.content_image, scale=args.content_scale)
-    content_image = content_image.unsqueeze(0).cuda()
+    content_image = content_image.unsqueeze(0)
+
+    if args.cuda:
+        content_image = content_image.cuda()
     content_image = Variable(utils.preprocess_batch(content_image))
-    style_model = torch.load(args.model).cuda()
+    style_model = torch.load(args.model)
+
+    if args.cuda:
+        style_model = style_model.cuda()
+
     output = style_model(content_image)
     utils.tensor_save_bgrimage(output.data[0], args.output_image)
 
@@ -182,6 +194,8 @@ def main():
                                  help="path for saving the output image")
     eval_arg_parser.add_argument("--model", type=str, required=True,
                                  help="saved model to be used for stylizing the image")
+    eval_arg_parser.add_argument("--cuda", type=int, required=False, default=0,
+                                 help="set it to 1 for running on GPU, 0 for CPU")
 
     args = main_arg_parser.parse_args()
 
