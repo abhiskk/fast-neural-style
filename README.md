@@ -51,5 +51,5 @@ Refer to ``neural_style/neural_style.py`` for other command line arguments.
   <img src='images/style-images/udnie.jpg' height="174px">
   <img src='images/output-images/amber-udnie.jpg' height="174px">
   <img src='images/output-images/amber-starry-night.jpg' height="174px">
-  <img src='images/style-images/starry_night.jpg' height="174px">
+  <img src='images/style-images/starry-night-cropped.jpg' height="174px">
 </div>
