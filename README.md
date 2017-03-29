@@ -38,7 +38,11 @@ Refer to ``neural_style/neural_style.py`` for other command line arguments.
 
 ## Models
 
-The ``saved-models`` folder contains different style-models that you can use for styling your images. Below are the results of applying those style-models on the door arch image present at the beginning of README.
+The ``saved-models`` folder contains different style-models that you can use for styling your images. Below are the results of applying the style-models on the door arch image.
+
+<div align='center'>
+  <img src='images/content-images/amber.jpg' height="174px">		
+</div>
 
 <div align='center'>
   <img src='images/style-images/mosaic.jpg' height="174px">
