@@ -30,24 +30,6 @@ def train(args):
     else:
         kwargs = {}
 
-    print("=====================")
-    print("CURRENT TIME:", time.ctime())
-    print("PYTHON VERSION:", sys.version)
-    print("PYTORCH VERSION:", torch.__version__)
-    print("BATCH SIZE:", args.batch_size)
-    print("EPOCHS:", args.epochs)
-    print("RANDOM SEED:", args.seed)
-    print("CUDA:", args.cuda)
-    print("LEARNING RATE:", args.lr)
-    print("STYLE IMAGE:", args.style_image)
-    print("CONTENT WEIGHT:", args.content_weight)
-    print("STYLE WEIGHT:", args.style_weight)
-    print("DATASET:", args.dataset)
-    print("SAVE-MODEL DIRECTORY:", args.save_model_dir)
-    print("STYLE SIZE:", args.style_size)
-    print("LOG INTERVAL:", args.log_interval)
-    print("=====================\n")
-
     transform = transforms.Compose([transforms.Scale(args.image_size),
                                     transforms.CenterCrop(args.image_size),
                                     transforms.ToTensor(),
