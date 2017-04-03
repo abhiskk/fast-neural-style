@@ -1,7 +1,7 @@
 # fast-neural-style :city_sunrise: :rocket:
 This repository contains a pytorch implementation of an algorithm for artistic style transfer. The algorithm can be used to mix the content of an image with the style of another image. For example, here is a photograph of a door arch rendered in the style of a stained glass painting.
 
-The model uses the method described in [Perceptual Losses for Real-Time Style Transfer and Super-Resolution](https://arxiv.org/abs/1603.08155) along with [Instance Normalization](https://arxiv.org/pdf/1607.08022.pdf).
+The model uses the method described in [Perceptual Losses for Real-Time Style Transfer and Super-Resolution](https://arxiv.org/abs/1603.08155) along with [Instance Normalization](https://arxiv.org/pdf/1607.08022.pdf). The saved-models for examples shown in the README can be downloaded from [here](https://www.dropbox.com/s/gtwnyp9n49lqs7t/saved-models.zip?dl=0).
 
 <p align="center">
     <img src="images/style-images/mosaic.jpg" height="200px">
@@ -9,16 +9,13 @@ The model uses the method described in [Perceptual Losses for Real-Time Style Tr
     <img src="images/output-images/amber-mosaic.jpg" height="440px">
 </p>
 
-The saved-models for examples shown in the README can be downloaded from [here](https://www.dropbox.com/s/gtwnyp9n49lqs7t/saved-models.zip?dl=0).
-
 ## Requirements
 The program is written in Python, and uses [pytorch](http://pytorch.org/), [scipy](https://www.scipy.org). A GPU is not necessary, but can provide a significant speed up especially for training a new model. Regular sized images can be styled on a laptop, desktop using saved models.
 
 ## Usage
 Stylize image
 ```
-python neural_style/neural_style.py eval --content-image </path/to/content/image> \
-    --model </path/to/saved/model> --output-image </path/to/output/image> --cuda 0
+python neural_style/neural_style.py eval --content-image </path/to/content/image> --model </path/to/saved/model> --output-image </path/to/output/image> --cuda 0
 ```
 * `--content-image`: path to content image you want to stylize.
 * `--model`: saved model to be used for stylizing the image (eg: `mosaic.model` present under `saved-models/`)
@@ -28,9 +25,7 @@ python neural_style/neural_style.py eval --content-image </path/to/content/image
 
 Train model
 ```bash
-python neural_style/neural_style.py train --dataset </path/to/train-dataset> \
-    --style-image </path/to/style/image> --vgg-model-dir </path/to/vgg/folder> \
-    --save-model-dir </path/to/save-models/folder> --epochs 2 --cuda 1
+python neural_style/neural_style.py train --dataset </path/to/train-dataset> --style-image </path/to/style/image> --vgg-model-dir </path/to/vgg/folder> --save-model-dir </path/to/save-model/folder> --epochs 2 --cuda 1
 ```
 
 There are several command line arguments, the important ones are listed below
