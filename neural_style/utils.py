@@ -50,7 +50,8 @@ def subtract_imagenet_mean_batch(batch):
     mean[:, 0, :, :] = 103.939
     mean[:, 1, :, :] = 116.779
     mean[:, 2, :, :] = 123.680
-    batch -= Variable(mean)
+    batch = batch.sub(Variable(mean))
+    return batch
 
 
 def preprocess_batch(batch):
