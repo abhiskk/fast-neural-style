@@ -132,7 +132,7 @@ def stylize(args):
 
     if args.cuda:
         content_image = content_image.cuda()
-    content_image = Variable(utils.preprocess_batch(content_image))
+    content_image = Variable(utils.preprocess_batch(content_image), volatile=True)
     style_model = TransformerNet()
     style_model.load_state_dict(torch.load(args.model))
 
