@@ -37,6 +37,8 @@ There are several command line arguments, the important ones are listed below
 
 Refer to ``neural_style/neural_style.py`` for other command line arguments.
 
+**DISCLAIMER**: This implementation is also a part of the [pytorch examples](https://github.com/pytorch/examples/tree/master/fast_neural_style) repository. Implementation in this repository uses pretrained Caffe2 VGG whereas the pytorch examples repository implementation uses pretrained Pytorch VGG. The two VGGs have different preprocessings which results in different `--content-weight` and `--style-weight` parameters. The styled output images also look slightly different.
+
 ## Models
 
 Models for the examples shown below can be downloaded from [here](https://www.dropbox.com/s/gtwnyp9n49lqs7t/saved-models.zip?dl=0) or by running the script ``download_styling_models.sh``.
@@ -56,5 +58,3 @@ Models for the examples shown below can be downloaded from [here](https://www.dr
   <img src='images/output-images/amber-udnie.jpg' height="174px">
   <img src='images/style-images/udnie.jpg' height="174px">
 </div>
-
-**DISCLAIMER**: This implementation is also a part of the [pytorch examples](https://github.com/pytorch/examples/tree/master/fast_neural_style) repository. Implementation in this repository uses pretrained Caffe2 VGG whereas the pytorch examples repository implementation uses pretrained Pytorch VGG. The two VGGs have different preprocessings which results in different `--content-weight` and `--style-weight` parameters. The styled output images also look slightly different.
