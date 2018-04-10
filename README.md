@@ -3,6 +3,8 @@ This repository contains a pytorch implementation of an algorithm for artistic s
 
 The model uses the method described in [Perceptual Losses for Real-Time Style Transfer and Super-Resolution](https://arxiv.org/abs/1603.08155) along with [Instance Normalization](https://arxiv.org/pdf/1607.08022.pdf). The saved-models for examples shown in the README can be downloaded from [here](https://www.dropbox.com/s/gtwnyp9n49lqs7t/saved-models.zip?dl=0).
 
+**DISCLAIMER**: This implementation is also a part of the [pytorch examples](https://github.com/pytorch/examples/tree/master/fast_neural_style) repository. Implementation in this repository uses pretrained Caffe2 VGG whereas the pytorch examples repository implementation uses pretrained Pytorch VGG. The two VGGs have different preprocessings which results in different `--content-weight` and `--style-weight` parameters. The styled output images also look slightly different.
+
 <p align="center">
     <img src="images/style-images/mosaic.jpg" height="200px">
     <img src="images/content-images/amber.jpg" height="200px">
@@ -36,8 +38,6 @@ There are several command line arguments, the important ones are listed below
 * `--cuda`: set it to 1 for running on GPU, 0 for CPU.
 
 Refer to ``neural_style/neural_style.py`` for other command line arguments.
-
-**DISCLAIMER**: This implementation is also a part of the [pytorch examples](https://github.com/pytorch/examples/tree/master/fast_neural_style) repository. Implementation in this repository uses pretrained Caffe2 VGG whereas the pytorch examples repository implementation uses pretrained Pytorch VGG. The two VGGs have different preprocessings which results in different `--content-weight` and `--style-weight` parameters. The styled output images also look slightly different.
 
 ## Models
 
