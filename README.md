@@ -17,6 +17,30 @@ The model uses the method described in [Perceptual Losses for Real-Time Style Tr
 ## Requirements
 The program is written in Python, and uses [pytorch](http://pytorch.org/), [scipy](https://www.scipy.org). A GPU is not necessary, but can provide a significant speed up especially for training a new model. Regular sized images can be styled on a laptop, desktop using saved models.
 
+## Setup the environnment
+
+### Run with virtualenv
+
+Create a virtualenv with python3.5 or python3.6. Older versions are not supported due to a lack of compatibilty with pytorch.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Run with Docker
+
+Build the image:
+```bash
+docker build . -t fast-neural-style
+```
+
+Run the container:
+```bash
+docker run --rm --volume "$(pwd)/:/data" style eval --content-image /data/image.jpg --model /app/saved-models/mosaic.pth --output-image /data/output.jpg --cuda 0
+```
+
 ## Usage
 Stylize image
 ```
@@ -47,7 +71,7 @@ Refer to ``neural_style/neural_style.py`` for other command line arguments.
 Models for the examples shown below can be downloaded from [here](https://www.dropbox.com/s/gtwnyp9n49lqs7t/saved-models.zip?dl=0) or by running the script ``download_styling_models.sh``.
 
 <div align='center'>
-  <img src='images/content-images/amber.jpg' height="174px">		
+  <img src='images/content-images/amber.jpg' height="174px">
 </div>
 
 <div align='center'>
